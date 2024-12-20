@@ -23,6 +23,7 @@ def main():
         lora.set_mode_rx()
         
         while True:
+            print("bura knk")
             while len(NODES) < NUMBER_OF_NODES:
                 sleep(.2)
         
