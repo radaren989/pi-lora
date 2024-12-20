@@ -51,7 +51,7 @@ def send_data_to_cloud():
         print("Error sending data:", e)
     
 def on_recv(message):
-    nums = list(map(int, message.message.split(":")))
+    nums = list(map(int, message.message.decode('utf-8').split(":")))
     data = {"field1": nums[0],
             "field2": nums[1],
             "field3": nums[3]}
