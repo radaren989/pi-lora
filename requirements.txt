@@ -1,0 +1,9 @@
+certifi==2024.12.14
+charset-normalizer==3.4.0
+idna==3.10
+lgpio==0.2.2.0
+pyLoraRFM9x==1.0.2
+python-dotenv==1.0.1
+requests==2.32.3
+spidev==3.6
+urllib3==2.2.3
