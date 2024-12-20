@@ -54,7 +54,7 @@ def on_recv(message):
     nums = list(map(int, message.message.decode('utf-8').split(":")))
     data = {"field1": nums[0],
             "field2": nums[1],
-            "field3": nums[3]}
+            "field3": nums[2]}
     NODES[message.header_from] = data
     print(message)
 
