@@ -20,16 +20,18 @@ def setup():
 def main():
     lora = setup()
     try:
-        lora.set_mode_rx()
-        
         while True:
-            print("bura knk")
+            print("Waking up...")
+            lora.set_mode_rx()
             while len(NODES) < NUMBER_OF_NODES:
                 sleep(.1)
-        
+            
+
+            lora.set_mode_sleep()
             send_data_to_cloud()
             PREV_NODES = NODES.copy()
             NODES.clear()
+            print("Sleeping...")
             sleep(20)
 
     except KeyboardInterrupt:
@@ -54,12 +56,11 @@ def on_recv(message):
     global NODES
     try:
         nums = list(map(int, message.message.decode('utf-8').split(":")))
-        data = {}
-        for i,v in enumerate(nums):
-            data["field" + str(i)] = v
-
+        data = {f"field{i+1}": v for i, v in enumerate(nums)}
+        
         NODES[message.header_from] = data
         print(message)
+        
     except ValueError as e:
         print("Invalid message format", e)
 
