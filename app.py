@@ -30,7 +30,7 @@ def main():
             send_data_to_cloud()
             PREV_NODES = NODES
             NODES.clear()
-            sleep(60)
+            sleep(20)
 
     except KeyboardInterrupt:
         print("exiting")
