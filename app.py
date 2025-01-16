@@ -25,10 +25,10 @@ def main():
         while True:
             print("bura knk")
             while len(NODES) < NUMBER_OF_NODES:
-                sleep(.2)
+                sleep(.1)
         
             send_data_to_cloud()
-            PREV_NODES = NODES
+            PREV_NODES = NODES.copy()
             NODES.clear()
             sleep(20)
 
@@ -51,13 +51,18 @@ def send_data_to_cloud():
         print("Error sending data:", e)
     
 def on_recv(message):
-    nums = list(map(int, message.message.decode('utf-8').split(":")))
-    data = {}
-    for i,v in enumerate(nums):
-        data["field" + str(i)] = v
+    global NODES
+    try:
+        nums = list(map(int, message.message.decode('utf-8').split(":")))
+        data = {}
+        for i,v in enumerate(nums):
+            data["field" + str(i)] = v
 
-    NODES[message.header_from] = data
-    print(message)
+        NODES[message.header_from] = data
+        print(message)
+    except ValueError as e:
+        print("Invalid message format", e)
+
 
 if __name__ == '__main__':
     main()
