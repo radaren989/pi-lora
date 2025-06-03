@@ -90,9 +90,9 @@ def manage_valve(lora:LoRa):
             print(f"manage_valve: no response for nodeId {i}")
             continue
 
-        field7 = feeds[0].get("field7")
-        
-        if not lora.send_to_wait(field7, i, header_flags=0x04):
+        valve = feeds[0].get("field8")
+        print(f"valve: {valve}")
+        if not lora.send_to_wait(valve, i, header_flags=0x04):
             print(f"manage_valve: valve status could not send to water node {i}")
 
         print(f"manage_valve: valve status sent to water node {i}")
