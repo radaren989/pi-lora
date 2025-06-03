@@ -92,7 +92,7 @@ def manage_valve(lora:LoRa):
 
         field7 = feeds[0].get("field7")
         
-        if not lora.send_to_wait(field7, i, header_flags=1):
+        if not lora.send_to_wait(field7, i, header_flags=0x1):
             print(f"manage_valve: valve status could not send to water node {i}")
 
         print(f"manage_valve: valve status sent to water node {i}")
@@ -109,7 +109,7 @@ def wait_for_all(lora:LoRa):
 def send_wait_time(lora:LoRa, seconds:int) -> None:
     lora.set_mode_tx()
 
-    lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=0x02 | FLAGS_REQ_ACK)
+    lora.send_to_wait(str(seconds), BROADCAST_ADDRESS, header_flags=0x02 | FLAGS_REQ_ACK)
 
 #Sends data to cloud
 def send_data_to_cloud():
