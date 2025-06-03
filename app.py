@@ -19,6 +19,11 @@ NUMBER_OF_NODES = 4
 #  5 -> second water node
 #  255 -> boradcast 
 
+#Header flag
+# 0 -> data node msg
+# 1 -> valve status send
+# 2 -> wait time
+
 load_dotenv()
 
 API_MAP = {2:[getenv("API_KEYREAD1"), getenv("API_KEYWRITE1")],
@@ -40,9 +45,9 @@ def main():
             print("Waking up...")
             wait_for_all(lora)
 
-            print("Send Valve Request")
-            manage_valve(lora)
-            sleep(1)
+            #print("Send Valve Request")
+            #manage_valve(lora)
+            #sleep(1)
 
             print("Sending waiting time")
             send_wait_time(lora, 15)
@@ -86,7 +91,7 @@ def manage_valve(lora:LoRa):
 
         field7 = feeds[0].get("field7")
         
-        if not lora.send_to_wait(field7, i):
+        if not lora.send_to_wait(field7, i, header_flags=1):
             print(f"manage_valve: valve status could not send to water node {i}")
 
         print(f"manage_valve: valve status sent to water node {i}")
@@ -104,7 +109,7 @@ def send_wait_time(lora:LoRa, seconds:int) -> None:
     lora.set_mode_tx()
 
     for _ in range(3):
-        lora.send_to_wait(seconds, BROADCAST_ADDRESS)
+        lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=2)
         sleep(.1)
 
 #Sends data to cloud
