@@ -91,6 +91,8 @@ def manage_valve(lora:LoRa):
             continue
 
         valve = feeds[0].get("field8")
+        if valve is None:
+            print(f"")
         print(f"valve: {valve}")
         if not lora.send_to_wait(valve, i, header_flags=0x04):
             print(f"manage_valve: valve status could not send to water node {i}")
@@ -169,4 +171,3 @@ def on_recv(message):
 
 if __name__ == '__main__':
     main()
-
