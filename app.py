@@ -2,6 +2,7 @@ from pyLoraRFM9x import LoRa, ModemConfig
 from dotenv import load_dotenv
 from pyLoraRFM9x.lora import BROADCAST_ADDRESS
 import requests as req
+import json
 from os import getenv
 from time import sleep
 import const
@@ -11,7 +12,7 @@ PREV_NODES = dict()
 NUMBER_OF_NODES = 4
 
 #ADDRESSES
-#  1 -> gateway
+#  1 -> gateway (this machine)
 #  2 -> first data node
 #  3 -> first water node
 #  4 -> second data node
@@ -19,12 +20,11 @@ NUMBER_OF_NODES = 4
 #  255 -> boradcast 
 
 load_dotenv()
-API_KEY = getenv("API_KEY")
 
-API_MAP = {0:getenv("API_KEY1"),
-           1:getenv("API_KEY1"),
-           2:getenv("API_KEY2"),
-           3:getenv("API_KEY2")}
+API_MAP = {2:[getenv("API_KEYREAD1"), getenv("API_KEYWRITE1")],
+           3:[getenv("API_KEYREAD1"), getenv("API_KEYWRITE1")],
+           4:[getenv("API_KEYREAD2"), getenv("API_KEYWRITE2")],
+           5:[getenv("API_KEYREAD2"), getenv("API_KEYWRITE2")]}
 
 def setup():
     # Configure Lora module
@@ -40,7 +40,10 @@ def main():
             print("Waking up...")
             wait_for_all(lora)
 
-            #may need to modify on_recv func because I get two tyes of msg now
+            print("Send Valve Request")
+            manage_valve(lora)
+            sleep(1)
+
             print("Sending waiting time")
             send_wait_time(lora, 15)
 
@@ -51,10 +54,43 @@ def main():
             NODES.clear()
 
             print("Sleeping...")
-            sleep(20)
+            sleep(13)
 
     except KeyboardInterrupt:
         print("exiting")
+
+
+def manage_valve(lora:LoRa):
+    for i in NODES.keys():
+        if i % 2 == 0:
+            continue
+
+        api_keys = API_MAP.get(i)
+        if api_keys is None:
+            print(f"manage_valve: API_KEYS is none for nodeID {i}")
+            continue
+        
+
+        api_key = api_keys[1] # read key
+        if api_key is None:
+            print(f"manage_valve: read API_KEY is none for nodeID {i}")
+            continue
+
+        url = const.FETCH_URL.replace("!KEY_HERE!", api_key)
+        res = req.get(url).json()
+        feeds = res.get("feeds", [])
+
+        if not feeds:
+            print(f"manage_valve: no response for nodeId {i}")
+            continue
+
+        field7 = feeds[0].get("field7")
+        
+        if not lora.send_to_wait(field7, i):
+            print(f"manage_valve: valve status could not send to water node {i}")
+
+        print(f"manage_valve: valve status sent to water node {i}")
+        
 
 #Waits for all nodes to send msg
 def wait_for_all(lora:LoRa):
@@ -73,14 +109,25 @@ def send_wait_time(lora:LoRa, seconds:int) -> None:
 
 #Sends data to cloud
 def send_data_to_cloud():
-    if not API_KEY:
+    if not API_MAP.values():
         raise ValueError("API key not found")
     
     try:
-        for node, data in NODES.items():
-            res = req.get(const.URL+API_KEY, params=data)
+        for nodeId, data in NODES.items():
+            api_keys = API_MAP.get(nodeId)
+            if api_keys is None:
+                print(f"NodeId  {nodeId} not in API_MAP")
+                continue
+
+            api_key = api_keys[0]
+            if api_key is None:
+                print(f"NodeId {nodeId} does not have Read API in API_MAP")
+                continue
+
+            url = const.UPDATE_URL + api_key
+            res = req.get(url, params=data)
             res.raise_for_status()
-            print(f"node:{node} send data {data}")
+            print(f"node:{nodeId} send data {data}")
 
     except req.exceptions.RequestException as e:
         print("Error sending data:", e)
@@ -89,12 +136,25 @@ def send_data_to_cloud():
 def on_recv(message):
     global NODES
     try:
-        nums = list(map(int, message.message.decode('utf-8').split(":")))
-        data = {f"field{i+1}": v for i, v in enumerate(nums)}
-        
-        NODES[message.header_from] = data
-        print(message)
-        
+        nodeId = message.header_from
+
+        nodeType = nodeId % 2 # 0 -> data 1-> water
+
+        nums = list()
+        data = {}
+        if nodeType:
+            nums = list(map(int, message.message.decode('utf-8').split(":")))
+            data = {f"field6:{nums[0]}", # water liter
+                    f"field7:{nums[1]}"} # valve status
+        else:
+            nums = list(map(int, message.message.decode('utf-8').split(":")))
+            data = {f"field{i+1}": v for i, v in enumerate(nums)}
+
+        NODES[nodeId] = data
+        print(f"NodeId: {nodeId}")
+        print(f"NodeType: {nodeType}")
+        print(message.message)
+
     except ValueError as e:
         print("Invalid message format", e)
 
