@@ -10,7 +10,7 @@ import const
 
 NODES = dict()
 PREV_NODES = dict()
-NUMBER_OF_NODES = 1
+NUMBER_OF_NODES = 2
 
 #ADDRESSES
 #  1 -> gateway (this machine)
@@ -46,9 +46,9 @@ def main():
             print("Waking up...")
             wait_for_all(lora)
 
-            #print("Send Valve Request")
-            #manage_valve(lora)
-            #sleep(1)
+            print("Send Valve Request")
+            manage_valve(lora)
+            sleep(1)
 
             print("Sending waiting time")
             send_wait_time(lora, 15)
@@ -147,12 +147,16 @@ def on_recv(message):
         nums = list()
         data = {}
         if nodeType:
-            nums = list(map(int, message.message.decode('utf-8').split(":")))
+            nums = list(message.message.decode('utf-8').split(":"))
             data = {f"field6:{nums[0]}", # water liter
                     f"field7:{nums[1]}"} # valve status
         else:
-            nums = list(map(int, message.message.decode('utf-8').split(":")))
-            data = {f"field{i+1}": v for i, v in enumerate(nums)}
+            nums = list(message.message.decode('utf-8').split(":"))
+            data = {f"field1:{nums[0]}",
+                    f"field2:{nums[1]}",
+                    f"field3:{nums[2]}",
+                    f"field4:{nums[3]}",
+                    f"field5:{nums[4]}",}
 
         NODES[nodeId] = data
         print(f"NodeId: {nodeId}")
