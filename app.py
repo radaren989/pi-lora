@@ -129,11 +129,7 @@ def send_data_to_cloud():
                 continue
 
             url = const.UPDATE_URL + api_key
-            print(nodeId)
-            print(data)
-            print(url)
             res = req.get(url, params=data)
-            print(res)
             res.raise_for_status()
             print(f"node:{nodeId} send data {data}")
 
