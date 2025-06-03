@@ -10,7 +10,7 @@ import const
 
 NODES = dict()
 PREV_NODES = dict()
-NUMBER_OF_NODES = 2
+NUMBER_OF_NODES = 1
 
 #ADDRESSES
 #  1 -> gateway (this machine)
@@ -21,9 +21,9 @@ NUMBER_OF_NODES = 2
 #  255 -> boradcast 
 
 #Header flag
-# 0 -> data node msg
-# 1 -> valve status send
-# 2 -> wait time
+# 0x00 -> data node msg
+# 0x04 -> valve status send
+# 0x02 -> wait time
 
 load_dotenv()
 
@@ -92,7 +92,7 @@ def manage_valve(lora:LoRa):
 
         field7 = feeds[0].get("field7")
         
-        if not lora.send_to_wait(field7, i, header_flags=0x1):
+        if not lora.send_to_wait(field7, i, header_flags=0x04):
             print(f"manage_valve: valve status could not send to water node {i}")
 
         print(f"manage_valve: valve status sent to water node {i}")
@@ -109,7 +109,7 @@ def wait_for_all(lora:LoRa):
 def send_wait_time(lora:LoRa, seconds:int) -> None:
     lora.set_mode_tx()
 
-    lora.send_to_wait(str(seconds), BROADCAST_ADDRESS, header_flags=0x02 | FLAGS_REQ_ACK)
+    lora.send_to_wait(str(seconds), BROADCAST_ADDRESS, header_flags=0x02)
 
 #Sends data to cloud
 def send_data_to_cloud():
