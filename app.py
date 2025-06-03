@@ -152,15 +152,15 @@ def on_recv(message):
         data = {}
         if nodeType:
             nums = list(message.message.decode('utf-8').split(":"))
-            data = {f"field6:{nums[0]}", # water liter
-                    f"field7:{nums[1]}"} # valve status
+            data = {f"field6:":nums[0], # water liter
+                    f"field7:":nums[1]} # valve status
         else:
             nums = list(message.message.decode('utf-8').split(":"))
-            data = {f"field1:{nums[0]}",
-                    f"field2:{nums[1]}",
-                    f"field3:{nums[2]}",
-                    f"field4:{nums[3]}",
-                    f"field5:{nums[4]}",}
+            data = {f"field1:":nums[0],
+                    f"field2:":nums[1],
+                    f"field3:":nums[2],
+                    f"field4:":nums[3],
+                    f"field5:":nums[4],}
 
         NODES[nodeId] = data
         print(f"NodeId: {nodeId}")
