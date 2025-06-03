@@ -109,9 +109,7 @@ def wait_for_all(lora:LoRa):
 def send_wait_time(lora:LoRa, seconds:int) -> None:
     lora.set_mode_tx()
 
-    for _ in range(3):
-        lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=2 & FLAGS_REQ_ACK)
-        sleep(.1)
+    lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=0x02 | FLAGS_REQ_ACK)
 
 #Sends data to cloud
 def send_data_to_cloud():
