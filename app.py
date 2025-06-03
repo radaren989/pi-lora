@@ -1,5 +1,6 @@
 from pyLoraRFM9x import LoRa, ModemConfig
 from dotenv import load_dotenv
+from pyLoraRFM9x.constants import FLAGS_REQ_ACK
 from pyLoraRFM9x.lora import BROADCAST_ADDRESS
 import requests as req
 import json
@@ -9,7 +10,7 @@ import const
 
 NODES = dict()
 PREV_NODES = dict()
-NUMBER_OF_NODES = 4
+NUMBER_OF_NODES = 1
 
 #ADDRESSES
 #  1 -> gateway (this machine)
@@ -109,7 +110,7 @@ def send_wait_time(lora:LoRa, seconds:int) -> None:
     lora.set_mode_tx()
 
     for _ in range(3):
-        lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=2)
+        lora.send_to_wait(seconds, BROADCAST_ADDRESS, header_flags=2 & FLAGS_REQ_ACK)
         sleep(.1)
 
 #Sends data to cloud
