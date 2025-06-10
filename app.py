@@ -46,9 +46,9 @@ def main():
             print("Waking up...")
             wait_for_all(lora)
 
-            print("Send Valve Request")
-            manage_valve(lora)
-            sleep(1)
+#            print("Send Valve Request")
+#            manage_valve(lora)
+#            sleep(1)
 
             print("Sending waiting time")
             send_wait_time(lora, 15)
@@ -125,7 +125,7 @@ def send_data_to_cloud():
                 print(f"NodeId  {nodeId} not in API_MAP")
                 continue
 
-            api_key = api_keys[0]
+            api_key = api_keys[1]
             if api_key is None:
                 print(f"NodeId {nodeId} does not have Read API in API_MAP")
                 continue
@@ -150,15 +150,15 @@ def on_recv(message):
         data = {}
         if nodeType:
             nums = list(message.message.decode('utf-8').split(":"))
-            data = {f"field6:":nums[0], # water liter
-                    f"field7:":nums[1]} # valve status
+            data = {f"field6":nums[0], # water liter
+                    f"field7":nums[1]} # valve status
         else:
             nums = list(message.message.decode('utf-8').split(":"))
-            data = {f"field1:":nums[0],
-                    f"field2:":nums[1],
-                    f"field3:":nums[2],
-                    f"field4:":nums[3],
-                    f"field5:":nums[4],}
+            data = {f"field1":nums[0],
+                    f"field2":nums[1],
+                    f"field3":nums[2],
+                    f"field4":nums[3],
+                    f"field5":nums[4],}
 
         NODES[nodeId] = data
         print(f"NodeId: {nodeId}")
