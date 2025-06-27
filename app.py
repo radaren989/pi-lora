@@ -118,21 +118,26 @@ def send_data_to_cloud():
         raise ValueError("API key not found")
     
     try:
-        for nodeId, data in NODES.items():
-            api_keys = API_MAP.get(nodeId)
-            if api_keys is None:
-                print(f"NodeId  {nodeId} not in API_MAP")
+        for i in range(2, max(NODES.keys()) + 1, 2):
+            dataNode = NODES.get(i, {})
+            waterNode = NODES.get(i+1, {})
+            
+            mergedData = {**dataNode, **waterNode}
+
+            if not mergedData:
+                print(f"No data to send for nodes {i} and {i+1}")
                 continue
 
-            api_key = api_keys[1]
-            if api_key is None:
-                print(f"NodeId {nodeId} does not have Read API in API_MAP")
+            api_keys = API_MAP.get(i)
+            if not api_keys or api_keys[1] is None:
+                print(f"API write key not found for data node {i}")
                 continue
 
-            url = const.UPDATE_URL + api_key
-            res = req.get(url, params=data)
+            write_key = api_keys[1]
+            url = const.UPDATE_URL + write_key
+            res = req.get(url, params=mergedData)
             res.raise_for_status()
-            print(f"node:{nodeId} send data {data}")
+            print(f"Sent data for node group {i}/{i+1}: {mergedData}")
 
     except req.exceptions.RequestException as e:
         print("Error sending data:", e)
@@ -159,8 +164,7 @@ def on_recv(message):
                     f"field4":nums[3],
                     f"field5":nums[4],}
 
-        idx = nodeId if nodeType == 0 else nodeId-1
-        NODES[idx] = data
+        NODES[nodeId] = data
         print(f"NodeId: {nodeId}")
         print(f"NodeType: {nodeType}")
         print(message.message)
