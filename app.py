@@ -27,10 +27,10 @@ NUMBER_OF_NODES = 1
 
 load_dotenv()
 
-API_MAP = {2:[getenv("API_KEYREAD1"), getenv("API_KEYWRITE1")],
-           3:[getenv("API_KEYREAD1"), getenv("API_KEYWRITE1")],
-           4:[getenv("API_KEYREAD2"), getenv("API_KEYWRITE2")],
-           5:[getenv("API_KEYREAD2"), getenv("API_KEYWRITE2")]}
+API_MAP = {2:[getenv("API_READNODE1"), getenv("API_WRITENODE1")],
+           3:[getenv("API_READNODE1"), getenv("API_WRITENODE1"), getenv("API_READVALVE1")],
+           4:[getenv("API_READNODE2"), getenv("API_WRITENODE2")],
+           5:[getenv("API_READNODE2"), getenv("API_WRITENODE2"), getenv("API_READVALVE2")]}
 
 def setup():
     # Configure Lora module
@@ -46,9 +46,9 @@ def main():
             print("Waking up...")
             wait_for_all(lora)
 
-#            print("Send Valve Request")
-#            manage_valve(lora)
-#            sleep(1)
+            print("Send Valve Request")
+            manage_valve(lora)
+            sleep(1)
 
             print("Sending waiting time")
             send_wait_time(lora, 15)
@@ -77,23 +77,28 @@ def manage_valve(lora:LoRa):
             continue
         
 
-        api_key = api_keys[1] # read key
+        api_key = api_keys[2] # valve read key
         if api_key is None:
             print(f"manage_valve: read API_KEY is none for nodeID {i}")
             continue
 
         url = const.FETCH_URL.replace("!KEY_HERE!", api_key)
         res = req.get(url).json()
+        print(res)
+
         feeds = res.get("feeds", [])
+        print(feeds)
 
         if not feeds:
             print(f"manage_valve: no response for nodeId {i}")
             continue
 
-        valve = feeds[0].get("field8")
-        if valve is None:
-            print(f"")
+        valve = feeds[0].get("field1")
         print(f"valve: {valve}")
+
+        if valve is None:
+            print(f"Valve field is empty")
+
         if not lora.send_to_wait(valve, i, header_flags=0x04):
             print(f"manage_valve: valve status could not send to water node {i}")
 
