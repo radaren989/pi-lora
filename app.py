@@ -10,7 +10,7 @@ import const
 
 NODES = dict()
 PREV_NODES = dict()
-NUMBER_OF_NODES = 1
+NUMBER_OF_NODES = 2
 
 #ADDRESSES
 #  1 -> gateway (this machine)
@@ -81,17 +81,15 @@ def manage_valve(lora:LoRa):
 
         url = const.FETCH_URL.replace("!CHANNEL_HERE!", str(channelId)).replace("!KEY_HERE!", apiKey)
         res = req.get(url).json()
-        print(res)
 
         feeds = res.get("feeds", [])
-        print(feeds)
 
         if not feeds:
             print(f"manage_valve: no response for nodeId {i}")
             continue
 
         valve = feeds[0].get("field1")
-        print(f"valve: {valve}")
+        print(f"valve{i}: {valve}")
 
         if valve is None:
             print(f"Valve field is empty")
@@ -100,7 +98,6 @@ def manage_valve(lora:LoRa):
             print(f"manage_valve: valve status could not send to water node {i}")
 
         print(f"manage_valve: valve status sent to water node {i}")
-        
 
 #Waits for all nodes to send msg
 def wait_for_all(lora:LoRa):
@@ -162,7 +159,8 @@ def on_recv(message):
                     f"field4":nums[3],
                     f"field5":nums[4],}
 
-        NODES[nodeId] = data
+        idx = nodeId if nodeType == 0 else nodeId-1
+        NODES[idx] = data
         print(f"NodeId: {nodeId}")
         print(f"NodeType: {nodeType}")
         print(message.message)
