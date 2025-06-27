@@ -13,4 +13,4 @@ LORA_CONST = {
 }
 
 UPDATE_URL = "https://api.thingspeak.com/update?api_key="
-FETCH_URL = "https://api.thingspeak.com/channels/2978511/feeds.json?api_key=!KEY_HERE!&results=1"
+FETCH_URL = "https://api.thingspeak.com/channels/!CHANNEL_HERE!/feeds.json?api_key=!KEY_HERE!&results=1"

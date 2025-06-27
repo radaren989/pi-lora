@@ -28,9 +28,12 @@ NUMBER_OF_NODES = 1
 load_dotenv()
 
 API_MAP = {2:[getenv("API_READNODE1"), getenv("API_WRITENODE1")],
-           3:[getenv("API_READNODE1"), getenv("API_WRITENODE1"), getenv("API_READVALVE1")],
+           3:[getenv("API_READNODE1"), getenv("API_WRITENODE1")],
            4:[getenv("API_READNODE2"), getenv("API_WRITENODE2")],
-           5:[getenv("API_READNODE2"), getenv("API_WRITENODE2"), getenv("API_READVALVE2")]}
+           5:[getenv("API_READNODE2"), getenv("API_WRITENODE2")]}
+
+VALVE_API_MAP = {3:(2994571, getenv("API_READVALVE1")),
+                 5:(2994572, getenv("API_READVALVE2"))}
 
 def setup():
     # Configure Lora module
@@ -71,18 +74,12 @@ def manage_valve(lora:LoRa):
         if i % 2 == 0:
             continue
 
-        api_keys = API_MAP.get(i)
-        if api_keys is None:
-            print(f"manage_valve: API_KEYS is none for nodeID {i}")
-            continue
-        
+        channelId, apiKey = VALVE_API_MAP.get(i, (None, None))
+        if channelId is None or apiKey is None:
+            print(f"manage_valve: missing data for nodeID {i}")
+            continue 
 
-        api_key = api_keys[2] # valve read key
-        if api_key is None:
-            print(f"manage_valve: read API_KEY is none for nodeID {i}")
-            continue
-
-        url = const.FETCH_URL.replace("!KEY_HERE!", api_key)
+        url = const.FETCH_URL.replace("!CHANNEL_HERE!", str(channelId)).replace("!KEY_HERE!", apiKey)
         res = req.get(url).json()
         print(res)
 
